@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!-- 配置数据源 -->
+    <bean id="dataSource" class="org.apache.tomcat.jdbc.pool.DataSource">
+        <property name="username" value="root"/>
+        <property name="password" value="lsjlsj"/>
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/test"/>
+        <property name="defaultAutoCommit" value="false"/>
+    </bean>
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="studentDao" class="com.spring.share.transaction.dao.impl.StudentDaoImpl">
+        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+    </bean>
+
+    <bean id="studentService" class="com.spring.share.transaction.service.impl.StudentServiceImpl">
+        <property name="studentDao" ref="studentDao"/>
+    </bean>
+
+    <!-- 配置事物管理器 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!--  配置代理 1. 一个 Service 一个代理-->
+    <bean id="studentProxy" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="transactionManager" ref="transactionManager"/>
+        <property name="target" ref="studentService"/>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="save*">PROPAGATION_REQUIRED</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!--    &lt;!&ndash; 配置代理 2. 使用拦截器的方式 &ndash;&gt;-->
+    <!--    <bean id="transactionInterceptor" class="org.springframework.transaction.interceptor.TransactionInterceptor">-->
+    <!--        <property name="transactionManager" ref="transactionManager" />-->
+    <!--        <property name="transactionAttributes">-->
+    <!--            <props>-->
+    <!--                <prop key="save*">PROPAGATION_REQUIRED</prop>-->
+    <!--            </props>-->
+    <!--        </property>-->
+    <!--    </bean>-->
+    <!--    <bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">-->
+    <!--        <property name="beanNames">-->
+    <!--            <list>-->
+    <!--                <value>*Service</value>-->
+    <!--            </list>-->
+    <!--        </property>-->
+    <!--        <property name="interceptorNames">-->
+    <!--            <list>-->
+    <!--                <value>transactionInterceptor</value>-->
+    <!--            </list>-->
+    <!--        </property>-->
+    <!--    </bean>-->
+
+    <!--    &lt;!&ndash; 配置代理 3. 使用 tx 标签的方式 &ndash;&gt;-->
+    <!--    <tx:advice id="advice" transaction-manager="transactionManager">-->
+    <!--        <tx:attributes>-->
+    <!--            <tx:method name="save*" propagation="REQUIRED"/>-->
+    <!--        </tx:attributes>-->
+    <!--    </tx:advice>-->
+    <!--    <aop:config>-->
+    <!--        <aop:pointcut id="pointcut" expression="execution(* com.spring.share.transaction.service.*.*(..))"/>-->
+    <!--        <aop:advisor advice-ref="advice" pointcut-ref="pointcut" />-->
+    <!--    </aop:config>-->
+</beans>

@@ -1,0 +1,20 @@
+spring:
+  profiles:
+    active: dev
+  datasource:
+    # 驱动不同 mysql 5  com.mysql.jdbc.Driver
+    #         mysql 8  com.mysql.cj.jdbc.Driver、需要增加时区的配置serverTimezone=GMT%2B8
+    url: jdbc:mysql://l-ars7.dev.ep.cn0.sgrl.io:3306/test?useSSL=false&useUnicode=true&characterEncoding=utf-8&serverTimezone=GMT%2B8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: dev
+    password: Tdc123456$
+
+#配置日志
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+global-config:
+  db-config:
+    logic-delete-value: 1
+    logic-not-delete-value: 0
